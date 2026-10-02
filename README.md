@@ -8,6 +8,8 @@ Plataforma de **bootcamps**: cada bootcamp é uma trilha de cursos, mentorias e 
 
 O domínio é a versão completa do desafio *Abstraindo um Bootcamp Usando Orientação a Objetos em Java*, da [DIO](https://www.dio.me) (a entrega fica em [barbozadevti/java-bootcamp-poo](https://github.com/barbozadevti/java-bootcamp-poo)), e mostra os quatro pilares da POO funcionando em um sistema com API REST e interface web.
 
+> **Apresentação interativa:** <https://barbozadevti.github.io/jornada/> — escolha a visão **recrutador** (código, testes, arquitetura, laboratório de polimorfismo e decisões) ou **CEO** (problema, simulador de retenção, ondas e riscos).
+
 ![Jornada em uso: bootcamps, trilha, progresso e ranking](docs/jornada.gif)
 
 ## Telas
@@ -37,6 +39,8 @@ docker run -p 5270:5270 -v dados:/dados jornada
 ```
 
 Na primeira execução a Jornada traz dados de exemplo (três bootcamps e quatro devs); *Voltar aos dados de exemplo*, no rodapé, recomeça. O estado fica em `~/.jornada/jornada.json` (configurável em `jornada.arquivo`; vazio = só na memória). A documentação interativa da API está em `/swagger-ui.html`.
+
+**No Render** (demo online): `New > Blueprint`, aponte para este repositório; o [`render.yaml`](render.yaml) já traz a configuração (plano gratuito: os dados de exemplo voltam a cada reinício).
 
 ## Os quatro pilares no código
 

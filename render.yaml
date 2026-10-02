@@ -1,0 +1,13 @@
+# Deploy em um clique no Render: New > Blueprint > aponte para este repositório.
+services:
+  - type: web
+    name: jornada
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # No plano gratuito não há disco: os dados de exemplo voltam a cada reinício.
+      - key: JORNADA_ARQUIVO
+        value: /tmp/jornada.json
+      - key: PORT
+        value: "5270"
