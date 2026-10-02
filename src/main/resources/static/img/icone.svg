@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Jornada">
+  <rect width="64" height="64" rx="16" fill="#0f3d3e"/>
+  <path d="M14 48c0-9 8-9 14-9s12 0 12-8-8-8-14-8" fill="none" stroke="#f2b84b" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 9"/>
+  <path d="M14 48c0-9 8-9 14-9s12 0 12-8-8-8-14-8" fill="none" stroke="#f6efe2" stroke-width="4" stroke-linecap="round" opacity=".35"/>
+  <circle cx="14" cy="48" r="5" fill="#f6efe2"/>
+  <path d="M40 15l9 6-9 6z" fill="#f2b84b"/>
+  <path d="M40 13v22" stroke="#f2b84b" stroke-width="3" stroke-linecap="round"/>
+</svg>

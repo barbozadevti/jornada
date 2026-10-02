@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jornada</title>
+  <meta name="description" content="Plataforma de bootcamps: trilhas de cursos, mentorias e desafios com XP, ranking e certificado. O domínio é um exemplo de orientação a objetos em Java 21 e Spring Boot.">
+  <meta name="theme-color" content="#0f3d3e">
+  <link rel="icon" href="img/icone.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="pular" href="#principal">Ir para o conteúdo</a>
+
+  <header class="topo">
+    <div class="topo-miolo">
+      <a class="marca" href="#/bootcamps" aria-label="Jornada, página inicial">
+        <img src="img/icone.svg" alt="" width="34" height="34">
+        <span>Jornada</span>
+      </a>
+      <nav class="menu" id="menu" aria-label="Seções">
+        <a href="#/bootcamps" data-rota="bootcamps">Bootcamps</a>
+        <a href="#/devs" data-rota="devs">Devs</a>
+        <a href="#/ranking" data-rota="ranking">Ranking</a>
+        <a href="#/dentro" data-rota="dentro">Por dentro</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="principal" class="miolo" tabindex="-1"></main>
+
+  <footer class="rodape">
+    <span>Jornada · Java 21 e Spring Boot · dados de exemplo</span>
+    <button type="button" class="link" id="reiniciar">Voltar aos dados de exemplo</button>
+  </footer>
+
+  <dialog id="janela" aria-labelledby="janela-titulo"></dialog>
+  <div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+</body>
+</html>

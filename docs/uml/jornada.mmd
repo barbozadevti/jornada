@@ -1,0 +1,98 @@
+classDiagram
+    direction TB
+
+    class Conteudo {
+        <<abstract>>
+        -id: String
+        -titulo: String
+        -descricao: String
+        +calcularXp() int
+        +explicarXp() String
+        +tipo() TipoConteudo
+        +detalhe() String
+        +impedimentoParaConcluir(hoje: LocalDate) Optional~String~
+    }
+
+    class Curso {
+        -cargaHoraria: int
+        +calcularXp() int
+    }
+
+    class Mentoria {
+        -data: LocalDate
+        +calcularXp() int
+        +jaAconteceu(hoje: LocalDate) boolean
+        +impedimentoParaConcluir(hoje: LocalDate) Optional~String~
+    }
+
+    class Desafio {
+        -dificuldade: int
+        +calcularXp() int
+    }
+
+    class Bootcamp {
+        -id: String
+        -nome: String
+        -descricao: String
+        -dataInicial: LocalDate
+        -duracaoEmDias: int
+        -vagas: int
+        +adicionar(conteudo: Conteudo) Bootcamp
+        +situacao(hoje: LocalDate) SituacaoBootcamp
+        +temVaga() boolean
+        +calcularXpTotal() int
+    }
+
+    class Matricula {
+        -inscritaEm: LocalDate
+        +proximo() Optional~Conteudo~
+        +impedimento(hoje: LocalDate) Optional~String~
+        +concluirProximo(hoje: LocalDate) Conteudo
+        +concluida() boolean
+        +xpGanho() int
+        +percentual() int
+        +certificado() Optional~Certificado~
+    }
+
+    class Dev {
+        -id: String
+        -nome: String
+        +matricular(bootcamp: Bootcamp, hoje: LocalDate) Matricula
+        +matriculaEm(bootcampId: String) Optional~Matricula~
+        +calcularTotalXp() int
+        +nivel() NivelDev
+        +certificados() List~Certificado~
+    }
+
+    class Certificado {
+        <<record>>
+        +codigo() String
+        +emitidoEm() LocalDate
+    }
+
+    class NivelDev {
+        <<enumeration>>
+        +paraXp(xp: int)$ NivelDev
+        +proximo() Optional~NivelDev~
+    }
+
+    class TipoConteudo {
+        <<enumeration>>
+    }
+
+    class SituacaoBootcamp {
+        <<enumeration>>
+    }
+
+    Conteudo <|-- Curso
+    Conteudo <|-- Mentoria
+    Conteudo <|-- Desafio
+    Bootcamp o-- Conteudo : trilha
+    Bootcamp o-- Matricula : matrículas
+    Dev o-- Matricula : matrículas
+    Matricula ..> Bootcamp
+    Matricula ..> Dev
+    Matricula ..> Certificado : emite
+    Conteudo ..> TipoConteudo
+    Bootcamp ..> SituacaoBootcamp
+    Dev ..> NivelDev
