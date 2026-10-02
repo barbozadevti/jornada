@@ -17,14 +17,12 @@ jobs:
           cache: maven
       - name: Testes (inclui o teste que confere o diagrama UML com o código)
         run: mvn -B verify
-      - name: Teste de fumaça do jar
+      - name: Teste de fumaça do jar (login, papéis e CSRF de verdade)
         run: |
           java -jar target/jornada.jar --jornada.arquivo= &
           for i in $(seq 1 60); do curl -sf http://localhost:5270/health && break; sleep 1; done
           curl -sf http://localhost:5270/ | grep -q "<title>Jornada</title>"
-          curl -sf http://localhost:5270/api/ranking | grep -q "Camila Souza"
-          curl -sf -X POST http://localhost:5270/api/devs/d2/matriculas/b1/progresso | grep -q '"xpGanho":30'
-          curl -sf http://localhost:5270/api/certificados/JRN-D1-B3 | grep -q "Fundamentos de Web"
+          bash tests/fumaca.sh http://localhost:5270
 
   docker:
     name: Imagem Docker
@@ -32,14 +30,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: docker build -t jornada .
-      - name: Teste de fumaça do contêiner
+      - name: Teste de fumaça do contêiner (e persistência da conta depois de reiniciar)
         run: |
           docker run -d -p 5270:5270 -v dados:/dados --name escola jornada
           for i in $(seq 1 90); do curl -sf http://localhost:5270/health && break; sleep 1; done
-          curl -sf http://localhost:5270/api/bootcamps | grep -q "Java Developer"
-          curl -sf -X POST http://localhost:5270/api/devs -H 'Content-Type: application/json' -d '{"nome":"Persistida"}' > /dev/null
+          FUMACA_N=777 bash tests/fumaca.sh http://localhost:5270
           docker restart escola
           for i in $(seq 1 90); do curl -sf http://localhost:5270/health && break; sleep 1; done
-          curl -sf http://localhost:5270/api/devs | grep -q "Persistida"
+          JAR=$(mktemp)
+          curl -sf -c "$JAR" -b "$JAR" http://localhost:5270/api/auth/csrf > /dev/null
+          T=$(grep XSRF-TOKEN "$JAR" | awk '{print $7}' | tail -1)
+          curl -sf -c "$JAR" -b "$JAR" -X POST -H "X-XSRF-TOKEN: $T" -H 'Content-Type: application/json' \
+            -d '{"email":"aluno777@jornada.dev","senha":"senha-do-aluno"}' http://localhost:5270/api/auth/entrar | grep -q "Aluno 777"
       - if: failure()
         run: docker logs escola

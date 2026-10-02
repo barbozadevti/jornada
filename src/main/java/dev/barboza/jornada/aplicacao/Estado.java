@@ -8,10 +8,10 @@ import dev.barboza.jornada.dominio.TipoConteudo;
 /**
  * Retrato de tudo o que a escola guarda, no formato que vai para o arquivo JSON.
  * Ao carregar, o domínio é remontado chamando os mesmos métodos de sempre, com as datas originais,
- * então as regras valem também para o que veio do disco.
+ * então as regras valem também para o que veio do disco. Arquivos antigos, sem contas, ainda carregam.
  */
 public record Estado(int proximoBootcamp, int proximoConteudo, int proximoDev,
-                     List<BootcampSalvo> bootcamps, List<DevSalvo> devs) {
+                     List<BootcampSalvo> bootcamps, List<DevSalvo> devs, List<ContaSalva> contas) {
 
     public record BootcampSalvo(String id, String nome, String descricao, LocalDate dataInicial, int duracaoEmDias,
                                 int vagas, List<ConteudoSalvo> conteudos) {
@@ -28,5 +28,8 @@ public record Estado(int proximoBootcamp, int proximoConteudo, int proximoDev,
     }
 
     public record ConclusaoSalva(String conteudoId, LocalDate em) {
+    }
+
+    public record ContaSalva(String email, String senhaHash, Papel papel, String devId, String nome) {
     }
 }

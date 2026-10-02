@@ -202,8 +202,8 @@ td.d, th.d { text-align: right; font-variant-numeric: tabular-nums; }
       <a class="btn" href="https://github.com/barbozadevti/java-bootcamp-poo" target="_blank" rel="noopener">Entrega do desafio (Java puro)</a>
     </div>
 <div class="moldura gifbox"><img class="shot" alt="A Jornada em uso: catálogo, trilha, conclusão de conteúdo e ranking" src="{{IMG_GIF}}"><p class="mudo" style="font-size:.88rem">30 segundos do sistema em uso, com dados de exemplo.</p></div>
-    <p class="mudo" style="font-size:.85rem">A demo online usa hospedagem gratuita: no primeiro acesso, ela pode levar cerca de um minuto para acordar.</p>
-    <div class="fichas"><span class="ficha">Java 21</span><span class="ficha">Spring Boot 4.1</span><span class="ficha">sealed classes</span><span class="ficha">77 testes</span><span class="ficha">CI + Docker</span><span class="ficha">sem framework no front</span></div>
+    <p class="mudo" style="font-size:.85rem">A demo online usa hospedagem gratuita: no primeiro acesso, ela pode levar cerca de um minuto para acordar. A tela de entrada traz contas de demonstração: clique em uma para entrar como coordenador ou como aluno.</p>
+    <div class="fichas"><span class="ficha">Java 21</span><span class="ficha">Spring Boot 4.1</span><span class="ficha">sealed classes</span><span class="ficha">95 testes</span><span class="ficha">CI + Docker</span><span class="ficha">sem framework no front</span></div>
   </section>
 
   <div class="trilha">
@@ -286,7 +286,8 @@ td.d, th.d { text-align: right; font-variant-numeric: tabular-nums; }
             <tr><td><b>Data por parâmetro</b></td><td>Nada chama <code>LocalDate.now()</code> no domínio. Os testes controlam o tempo.</td><td>Todo método que depende de data ganha um argumento a mais.</td></tr>
             <tr><td><b>Matricula como classe própria</b></td><td>O progresso pertence à relação dev × bootcamp, não ao dev nem ao bootcamp.</td><td>Mais uma classe e uma navegação a mais, em troca de um modelo que cresce sem gambiarra.</td></tr>
             <tr><td><b>Front sem framework</b></td><td>Poucas telas, nenhuma dependência para auditar, CSP sem <code>unsafe-inline</code>.</td><td>Mais código manual de DOM. Com muitas telas, eu adotaria um framework.</td></tr>
-            <tr><td><b>Sem autenticação</b></td><td>É uma demonstração do domínio e da API.</td><td>É a primeira coisa da próxima onda: Spring Security e cada aluno vendo só a própria jornada.</td></tr>
+            <tr><td><b>Sessão com cookie, não JWT</b></td><td>Um único site, sem terceiros. Cookie HttpOnly e SameSite, mais CSRF, é mais simples e mais seguro que guardar token no navegador.</td><td>Escalar para vários servidores pede sessão compartilhada. Para app móvel ou API pública, eu trocaria por tokens.</td></tr>
+            <tr><td><b>404 em vez de 403 para dados alheios</b></td><td>O aluno que pede a jornada de outro recebe “não encontrado”, sem confirmar que a pessoa existe.</td><td>Mensagens de erro menos óbvias para quem integra a API.</td></tr>
           </tbody>
         </table>
       </div>
@@ -312,7 +313,7 @@ td.d, th.d { text-align: right; font-variant-numeric: tabular-nums; }
       <a class="btn" href="https://github.com/barbozadevti/jornada" target="_blank" rel="noopener">Ver o produto no GitHub</a>
     </div>
 <div class="moldura gifbox"><img class="shot" alt="A Jornada em uso: catálogo, trilha, conclusão de conteúdo e ranking" src="{{IMG_GIF}}"><p class="mudo" style="font-size:.88rem">30 segundos do sistema em uso, com dados de exemplo.</p></div>
-    <div class="fichas"><span class="ficha">Roda com um clique</span><span class="ficha">Sem licença paga</span><span class="ficha">Sem banco de dados para operar</span><span class="ficha">Certificado verificável</span></div>
+    <div class="fichas"><span class="ficha">Roda com um clique</span><span class="ficha">Sem licença paga</span><span class="ficha">Cada aluno vê só a sua jornada</span><span class="ficha">Certificado verificável</span></div>
   </section>
 
   <div class="trilha">
@@ -389,8 +390,8 @@ td.d, th.d { text-align: right; font-variant-numeric: tabular-nums; }
         <div class="onda"><span class="selo">✓</span><div><h3>Onda 1 · Trilha e XP</h3><p>Cursos, mentorias, desafios, matrícula e progresso.</p></div></div>
         <div class="onda"><span class="selo">✓</span><div><h3>Onda 2 · Regras de bootcamp</h3><p>Vagas, períodos, mentoria com data, níveis e ranking.</p></div></div>
         <div class="onda"><span class="selo">✓</span><div><h3>Onda 3 · Certificado e dados</h3><p>Certificado verificável e persistência em arquivo.</p></div></div>
-        <div class="onda"><span class="selo">✓</span><div><h3>Onda 4 · Qualidade</h3><p>77 testes, CI e imagem Docker.</p></div></div>
-        <div class="onda"><span class="selo prox">→</span><div><h3>Próxima · Acesso por aluno</h3><p>Login e cada aluno vendo só a própria jornada.</p></div></div>
+        <div class="onda"><span class="selo">✓</span><div><h3>Onda 4 · Qualidade</h3><p>Testes, CI e imagem Docker.</p></div></div>
+        <div class="onda"><span class="selo">✓</span><div><h3>Onda 5 · Acesso por aluno</h3><p>Login, papéis e cada aluno vendo só a própria jornada.</p></div></div>
         <div class="onda"><span class="selo prox">→</span><div><h3>Próxima · Várias turmas</h3><p>Edições do mesmo bootcamp, lado a lado.</p></div></div>
         <div class="onda"><span class="selo prox">→</span><div><h3>Próxima · Edição de trilha</h3><p>Ajustar e remover conteúdos com segurança.</p></div></div>
         <div class="onda"><span class="selo prox">→</span><div><h3>Próxima · Pré-requisitos</h3><p>Conteúdos opcionais e bootcamps encadeados.</p></div></div>
@@ -400,7 +401,7 @@ td.d, th.d { text-align: right; font-variant-numeric: tabular-nums; }
     <section class="marco">
       <h2>Riscos tratados desde o início</h2>
       <div class="grade">
-        <div class="cartao"><h3>Segurança</h3><p>Política de conteúdo restritiva, sem scripts inline, e contêiner rodando sem privilégios.</p></div>
+        <div class="cartao"><h3>Segurança</h3><p>Login com sessão e CSRF, bloqueio após 5 senhas erradas, senhas com hash BCrypt, política de conteúdo sem scripts inline e contêiner sem privilégios.</p></div>
         <div class="cartao"><h3>Confiabilidade</h3><p>Dados gravados por troca atômica: queda de energia não deixa o arquivo pela metade. Arquivo corrompido não impede a abertura.</p></div>
         <div class="cartao"><h3>Qualidade</h3><p>Cada regra de negócio tem teste. Mudar uma regra sem querer quebra o build, não o curso de ninguém.</p></div>
       </div>
@@ -440,14 +441,14 @@ mvn -DskipTests package &amp;&amp; java -jar target/jornada.jar
 
   /* ---------- sinais de qualidade ---------- */
   var sinais = [
-    ['77 testes automatizados', 'Domínio, casos de uso, persistência e API completa (200, 201, 400, 404, 409, 422).', 'src/test/'],
+    ['95 testes automatizados', 'Domínio, casos de uso, persistência, API completa (200, 201, 400, 401, 403, 404, 409, 422) e acesso por papel.', 'src/test/'],
     ['CI verde com Docker', 'Testes, teste de fumaça do jar e do contêiner, que reinicia e confere a persistência.', '.github/workflows/ci.yml'],
     ['UML conferido por teste', 'Classe, método, atributo, estereótipo e relação do diagrama existem no código.', 'DiagramaUmlTest.java'],
     ['Hierarquia fechada', '<code>Conteudo</code> é <code>sealed</code>: o compilador conhece todos os tipos.', 'dominio/Conteudo.java'],
     ['Domínio sem framework', 'Nenhuma anotação do Spring no pacote de regras. Datas entram por parâmetro.', 'dominio/'],
     ['Erros padronizados', 'problem+json (RFC 9457), com a mensagem pronta para a tela.', 'api/TratamentoDeErros.java'],
     ['Persistência atômica', 'Grava em temporário e troca. Arquivo corrompido não derruba a abertura.', 'aplicacao/ArquivoJson.java'],
-    ['Segurança no front', 'CSP sem <code>unsafe-inline</code>; DOM com <code>textContent</code>.', 'config/CabecalhosDeSeguranca.java']
+    ['Login e papéis', 'Spring Security com sessão, CSRF e bloqueio por senhas erradas. O aluno só vê a própria jornada.', 'seguranca/']
   ];
   $('#sinais').innerHTML = sinais.map(function (s) {
     return '<div class="cartao"><span class="selo">✓</span><h3>' + s[0] + '</h3><p>' + s[1] + '</p><code class="mudo" style="font-size:.78rem;overflow-wrap:anywhere">' + s[2] + '</code></div>';
@@ -540,10 +541,10 @@ mvn -DskipTests package &amp;&amp; java -jar target/jornada.jar
   pilar(0);
 
   /* ---------- barras de teste ---------- */
-  var SUITES = [['DominioTest', 26], ['DiagramaUmlTest', 25], ['ApiTest', 14], ['EscolaTest', 12]];
-  $('#barras-teste').innerHTML = '<h3>77 testes, quatro suítes</h3>' + SUITES.map(function (s) {
+  var SUITES = [['DominioTest', 26], ['DiagramaUmlTest', 25], ['EscolaTest', 17], ['ApiTest', 14], ['AcessoTest', 13]];
+  $('#barras-teste').innerHTML = '<h3>95 testes, cinco suítes</h3>' + SUITES.map(function (s) {
     return '<div class="barra-l"><span>' + s[0] + '</span><span class="barra-t"><i style="width:' + (s[1] / 26 * 100) + '%"></i></span><b style="text-align:right">' + s[1] + '</b></div>';
-  }).join('') + '<p class="mudo" style="font-size:.9rem">Domínio: XP de cada tipo, encapsulamento, matrícula, mentoria com data, certificado e níveis. Escola: fluxo completo e persistência, inclusive arquivo corrompido. API: todos os códigos de resposta.</p>';
+  }).join('') + '<p class="mudo" style="font-size:.9rem">Domínio: XP de cada tipo, encapsulamento, matrícula, mentoria com data, certificado e níveis. Escola: fluxo completo e persistência, inclusive arquivo corrompido. API: todos os códigos de resposta. Acesso: login, CSRF, bloqueio e o aluno enxergando só o que é dele.</p>';
 
   /* ---------- telas ---------- */
   var TELAS = [

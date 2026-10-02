@@ -78,6 +78,17 @@ classDiagram
     Matricula ..> Certificado : emite
 ```
 
+## Login e papéis
+
+A Jornada tem login por sessão (Spring Security, cookie HttpOnly + SameSite, CSRF no padrão de SPA). Há dois papéis:
+
+| Papel | Pode |
+|---|---|
+| **Coordenador** | Criar bootcamps, montar trilhas, cadastrar alunos (com e-mail e senha), ver todos os devs, reiniciar os dados de exemplo |
+| **Aluno** | Ver o catálogo e o ranking, se matricular e concluir conteúdos **só na própria jornada**. A jornada de outro aluno responde 404 |
+
+Contas de demonstração (dados fictícios, senha `Jornada@2026`): `coordenador@jornada.dev`, `camila@jornada.dev`, `joao@jornada.dev`, `marina@jornada.dev` e `beatriz@jornada.dev`. A tela de entrada tem um botão para cada uma. Cinco senhas erradas seguidas bloqueiam o e-mail por 10 minutos, e a mensagem é a mesma para e-mail inexistente e senha errada. As senhas ficam com hash BCrypt. Conferir um certificado continua público, sem login.
+
 O diagrama completo está em [`docs/uml/jornada.mmd`](docs/uml/jornada.mmd) (e em [imagem](docs/uml/jornada.svg)). Um teste ([`DiagramaUmlTest`](src/test/java/dev/barboza/jornada/DiagramaUmlTest.java)) lê esse arquivo e confere, por reflexão, cada classe, atributo, método, estereótipo e relação contra o código: se o diagrama divergir, o build quebra.
 
 ## Regras
@@ -99,24 +110,26 @@ O diagrama completo está em [`docs/uml/jornada.mmd`](docs/uml/jornada.mmd) (e e
 
 | Rota | O que faz |
 |---|---|
+| `POST /api/auth/entrar` · `GET /api/auth/eu` · `POST /api/auth/sair` | Login, quem está logado e logout (sessão + CSRF) |
 | `GET /api/bootcamps` · `GET /api/bootcamps/{id}` | Lista e detalha, com situação, vagas, XP e trilha |
 | `POST /api/bootcamps` | Cria um bootcamp |
 | `POST /api/bootcamps/{id}/conteudos` | Acrescenta curso, mentoria ou desafio à trilha |
 | `GET /api/devs` · `GET /api/devs/{id}` | Devs com nível, XP, matrículas e trilha percorrida |
-| `POST /api/devs` | Cadastra um dev |
+| `POST /api/devs` | Cadastra um dev e a conta de acesso dele (só o coordenador) |
 | `POST /api/devs/{id}/matriculas` | Matricula em um bootcamp |
 | `POST /api/devs/{id}/matriculas/{bootcampId}/progresso` | Conclui o próximo conteúdo |
 | `GET /api/ranking` | Ranking de XP |
 | `GET /api/certificados/{codigo}` | Confere um certificado |
 | `GET /api/regras-xp` | Regra de XP de cada tipo |
 
-Os erros seguem o formato `application/problem+json` (RFC 9457): **404** não encontrado, **409** não cabe no estado atual (matrícula repetida, mentoria que ainda não aconteceu), **422** regra violada (dado inválido) e **400** corpo malformado.
+Os erros seguem o formato `application/problem+json` (RFC 9457): **401** não autenticado, **403** sem permissão (ou sem token CSRF), **404** não encontrado, **409** não cabe no estado atual (matrícula repetida, mentoria que ainda não aconteceu), **422** regra violada (dado inválido) e **400** corpo malformado.
 
 ## Arquitetura
 
 ```text
 dominio/     Java puro, sem Spring: Conteudo, Curso, Mentoria, Desafio, Bootcamp, Matricula, Dev, Certificado...
 aplicacao/   Escola (casos de uso, ids, relógio), Armazenamento (JSON em arquivo), dados de exemplo
+seguranca/   Sessão, CSRF, papéis, bloqueio por senhas erradas
 api/         Controllers, DTOs de entrada e saída, tratamento de erros
 config/      Beans, cabeçalhos de segurança (CSP) e abertura do navegador pelo atalho
 static/      Interface em módulos ES, sem framework e sem nada inline
@@ -134,7 +147,7 @@ static/      Interface em módulos ES, sem framework e sem nada inline
 mvn verify
 ```
 
-77 testes: regras do domínio (XP de cada tipo, encapsulamento, matrícula, mentoria com data, certificado, níveis), casos de uso e persistência (inclusive arquivo corrompido), API completa com `MockMvc` (200, 201, 400, 404, 409, 422) e o diagrama UML contra o código. O GitHub Actions roda os testes, um teste de fumaça do jar e outro do contêiner (que reinicia e confere que os dados persistiram).
+95 testes: regras do domínio (XP de cada tipo, encapsulamento, matrícula, mentoria com data, certificado, níveis), casos de uso e persistência (inclusive arquivo corrompido), API completa com `MockMvc` (200, 201, 400, 404, 409, 422) e o diagrama UML contra o código. O GitHub Actions roda os testes, um teste de fumaça do jar e outro do contêiner (que reinicia e confere que os dados persistiram).
 
 ## Planejamento
 

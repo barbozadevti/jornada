@@ -10,7 +10,7 @@ export function listaDeBootcamps(ctx) {
       h('div', {},
         h('h1', {}, 'Bootcamps'),
         h('p', { class: 'sub' }, 'Cada bootcamp é uma trilha de cursos, mentorias e desafios. Concluir um conteúdo rende XP.')),
-      h('button', { class: 'botao primario', type: 'button', onclick: () => janelaNovoBootcamp(ctx) }, icone('mais'), 'Novo bootcamp')),
+      ctx.coordenador ? h('button', { class: 'botao primario', type: 'button', onclick: () => janelaNovoBootcamp(ctx) }, icone('mais'), 'Novo bootcamp') : null),
     h('div', { class: 'grade' }, bootcamps.map((b) => cartao(b))));
 }
 
@@ -64,9 +64,10 @@ export function detalheDoBootcamp(ctx, id) {
         b.conteudos.length ? trilha : h('p', { class: 'vazio' }, 'Ainda não há conteúdos. Adicione o primeiro ao lado.')),
       h('div', { class: 'lateral' },
         painelMatricula(ctx, b, matriculadosIds),
-        b.trilhaCongelada
-          ? h('div', { class: 'cartao nota' }, icone('cadeado', 18), h('p', {}, 'A trilha está congelada: já há alunos matriculados, então não dá para acrescentar conteúdos.'))
-          : painelNovoConteudo(ctx, b))));
+        !ctx.coordenador ? null
+          : b.trilhaCongelada
+            ? h('div', { class: 'cartao nota' }, icone('cadeado', 18), h('p', {}, 'A trilha está congelada: já há alunos matriculados, então não dá para acrescentar conteúdos.'))
+            : painelNovoConteudo(ctx, b))));
 }
 
 function numeroGrande(valor, rotulo) {
@@ -74,6 +75,7 @@ function numeroGrande(valor, rotulo) {
 }
 
 function painelMatricula(ctx, b, matriculadosIds) {
+  if (!ctx.coordenador) return painelMatriculaDoAluno(ctx, b, matriculadosIds);
   const disponiveis = ctx.dados.devs.filter((d) => !matriculadosIds.has(d.id));
   const matriculados = ctx.dados.devs.filter((d) => matriculadosIds.has(d.id));
   const seletor = h('select', { id: 'dev-matricula' }, disponiveis.map((d) => h('option', { value: d.id }, d.nome)));
@@ -99,6 +101,27 @@ function painelMatricula(ctx, b, matriculadosIds) {
         m.certificado ? h('span', { class: 'mini ouro', title: 'Certificado emitido' }, icone('trofeu', 14)) : null,
         h('span', { class: 'mudo' }, m.percentual + '%')));
     })) : null);
+}
+
+/** O aluno só se matricula a si mesmo. */
+function painelMatriculaDoAluno(ctx, b, matriculadosIds) {
+  const jaEsta = matriculadosIds.has(ctx.usuario.devId);
+  const bloqueio = b.situacao === 'ENCERRADO' ? 'Bootcamp encerrado: não aceita novas matrículas.'
+    : !b.conteudos.length ? 'A trilha ainda não tem conteúdos.'
+    : b.vagasRestantes === 0 ? 'Não há mais vagas.' : null;
+  const botao = h('button', { class: 'botao primario grande', type: 'button', disabled: !!bloqueio,
+    onclick: async () => {
+      try {
+        await post('/api/devs/' + ctx.usuario.devId + '/matriculas', { bootcampId: b.id });
+        aviso('Matrícula feita. Bom estudo!');
+        await ctx.recarregar();
+      } catch (e) { aviso(e.message, 'erro'); }
+    } }, 'Quero me matricular');
+  return h('div', { class: 'cartao' },
+    h('h3', {}, 'Sua matrícula'),
+    jaEsta
+      ? h('div', { class: 'concluida' }, h('p', {}, icone('check', 18), ' Você está neste bootcamp.'), h('a', { class: 'botao', href: '#/devs/' + ctx.usuario.devId }, 'Ver minha jornada'))
+      : [botao, bloqueio ? h('p', { class: 'mudo' }, bloqueio) : null]);
 }
 
 function painelNovoConteudo(ctx, b) {

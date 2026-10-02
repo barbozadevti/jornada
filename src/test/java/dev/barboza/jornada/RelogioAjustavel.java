@@ -14,6 +14,10 @@ public class RelogioAjustavel extends Clock {
 
     private Instant agora = HOJE.atTime(12, 0).atZone(ZONA).toInstant();
 
+    public void avancarMinutos(int minutos) {
+        agora = agora.plus(Duration.ofMinutes(minutos));
+    }
+
     public void avancarDias(int dias) {
         agora = agora.plus(Duration.ofDays(dias));
     }

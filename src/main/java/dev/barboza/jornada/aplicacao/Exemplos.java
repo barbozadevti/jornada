@@ -15,6 +15,9 @@ import dev.barboza.jornada.dominio.Bootcamp;
  */
 final class Exemplos {
 
+    /** Senha de todas as contas de demonstração (dados fictícios, públicos de propósito). */
+    static final String SENHA_DEMO = "Jornada@2026";
+
     private Exemplos() {
     }
 
@@ -49,7 +52,14 @@ final class Exemplos {
         var camila = escola.criarDevEm("Camila Souza");
         var joao = escola.criarDevEm("João Pereira");
         var marina = escola.criarDevEm("Marina Alves");
-        escola.criarDevEm("Beatriz Lima");
+        var beatriz = escola.criarDevEm("Beatriz Lima");
+
+        // Contas de demonstração: o coordenador vê tudo; cada aluno vê só a própria jornada.
+        escola.criarConta("coordenador@jornada.dev", SENHA_DEMO, Papel.COORDENADOR, null, "Roberto Lima");
+        escola.criarConta("camila@jornada.dev", SENHA_DEMO, Papel.ALUNO, camila.getId(), camila.getNome());
+        escola.criarConta("joao@jornada.dev", SENHA_DEMO, Papel.ALUNO, joao.getId(), joao.getNome());
+        escola.criarConta("marina@jornada.dev", SENHA_DEMO, Papel.ALUNO, marina.getId(), marina.getNome());
+        escola.criarConta("beatriz@jornada.dev", SENHA_DEMO, Papel.ALUNO, beatriz.getId(), beatriz.getNome());
 
         // Camila: terminou Fundamentos de Web (tem certificado) e está no meio do Java Developer.
         escola.matricularEm(camila.getId(), web.getId(), hoje.minusDays(110));

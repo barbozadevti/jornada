@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import dev.barboza.jornada.aplicacao.Armazenamento;
 import dev.barboza.jornada.aplicacao.ArquivoJson;
@@ -44,8 +45,8 @@ public class Configuracao {
     }
 
     @Bean(initMethod = "iniciar")
-    Escola escola(Clock relogio, Armazenamento armazenamento) {
-        return new Escola(relogio, armazenamento);
+    Escola escola(Clock relogio, Armazenamento armazenamento, PasswordEncoder codificador) {
+        return new Escola(relogio, armazenamento, codificador);
     }
 
     @Bean

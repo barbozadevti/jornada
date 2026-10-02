@@ -11,6 +11,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import dev.barboza.jornada.dominio.EstadoInvalidoException;
 import dev.barboza.jornada.dominio.NaoEncontradoException;
 import dev.barboza.jornada.dominio.RegraVioladaException;
+import dev.barboza.jornada.seguranca.CredenciaisInvalidasException;
 
 /** Erros no formato problem+json (RFC 9457), com a mensagem pronta para mostrar na tela. */
 @RestControllerAdvice
@@ -24,6 +25,11 @@ public class TratamentoDeErros {
     @ExceptionHandler(EstadoInvalidoException.class)
     ProblemDetail estado(EstadoInvalidoException e) {
         return problema(HttpStatus.CONFLICT, "Não é possível agora", e.getMessage());
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    ProblemDetail credenciais(CredenciaisInvalidasException e) {
+        return problema(HttpStatus.UNAUTHORIZED, "Não foi possível entrar", e.getMessage());
     }
 
     @ExceptionHandler(NaoEncontradoException.class)

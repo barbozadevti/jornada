@@ -25,7 +25,7 @@
 | FAZ | NÃO FAZ |
 |---|---|
 | Cadastra bootcamps e monta a trilha com três tipos de conteúdo | Hospeda aulas ou materiais |
-| Matricula devs respeitando vagas, período e duplicidade | Exige login (é uma demonstração; sem autenticação) |
+| Matricula devs respeitando vagas, período e duplicidade | Integra com login social (é uma conta própria, por e-mail e senha) |
 | Calcula o XP de cada tipo pela sua própria regra | Compara com outras plataformas |
 | Bloqueia a mentoria até o dia marcado | Envia e-mails ou notificações |
 | Emite certificado com código conferível | Gera PDF (o certificado imprime pelo navegador) |
@@ -107,11 +107,20 @@ Avaliadas por **esforço**, **valor de negócio** e **valor de aprendizado/portf
 | Diagrama UML conferido por teste contra o código | médio | alto |
 | CI com testes, teste de fumaça e imagem Docker | baixo | médio |
 
+### Onda 5: acesso por aluno
+| Funcionalidade | Esforço | Valor |
+|---|---|---|
+| Login por sessão, CSRF e senhas com hash | médio | alto |
+| Papéis: o coordenador administra, o aluno só vê e mexe na própria jornada | médio | alto |
+| Bloqueio após 5 senhas erradas, com a mesma mensagem para e-mail inexistente | baixo | médio |
+| Cadastro de aluno pelo coordenador, já com e-mail e senha | baixo | médio |
+| Conferência pública de certificado, sem login | baixo | médio |
+
 ### Próximas ondas (fora do escopo agora)
 - Edição e remoção de conteúdos (hoje a trilha só cresce, e congela com alunos).
 - Turmas com várias edições do mesmo bootcamp.
 - Pré-requisitos entre bootcamps e conteúdos opcionais.
-- Autenticação, com o aluno vendo só a própria jornada.
+- Troca de senha pelo próprio aluno e recuperação por e-mail.
 
 ## 7. Canvas MVP
 

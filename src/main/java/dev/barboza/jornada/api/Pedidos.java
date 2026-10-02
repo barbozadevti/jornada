@@ -22,7 +22,11 @@ public final class Pedidos {
                                Integer dificuldade) {
     }
 
-    public record NovoDev(@NotBlank @Size(max = 50) String nome) {
+    public record NovoDev(@NotBlank @Size(max = 50) String nome, @NotBlank @Size(max = 120) String email,
+                          @NotBlank @Size(max = 72) String senha) {
+    }
+
+    public record Credenciais(@NotBlank @Size(max = 120) String email, @NotBlank @Size(max = 72) String senha) {
     }
 
     public record NovaMatricula(@NotBlank String bootcampId) {

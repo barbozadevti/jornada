@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import dev.barboza.jornada.dominio.Bootcamp;
 import dev.barboza.jornada.dominio.Certificado;
 import dev.barboza.jornada.dominio.Conteudo;
@@ -40,15 +42,18 @@ public class Escola {
 
     private final Clock relogio;
     private final Armazenamento armazenamento;
+    private final PasswordEncoder codificador;
+    private final Map<String, Conta> contas = new LinkedHashMap<>();
     private final Map<String, Bootcamp> bootcamps = new LinkedHashMap<>();
     private final Map<String, Dev> devs = new LinkedHashMap<>();
     private int proximoBootcamp = 1;
     private int proximoConteudo = 1;
     private int proximoDev = 1;
 
-    public Escola(Clock relogio, Armazenamento armazenamento) {
+    public Escola(Clock relogio, Armazenamento armazenamento, PasswordEncoder codificador) {
         this.relogio = relogio;
         this.armazenamento = armazenamento;
+        this.codificador = codificador;
     }
 
     public LocalDate hoje() {
@@ -89,6 +94,14 @@ public class Escola {
                 .findFirst();
     }
 
+    public synchronized Optional<Conta> conta(String email) {
+        return Optional.ofNullable(contas.get(chave(email)));
+    }
+
+    public boolean senhaConfere(Conta conta, String senha) {
+        return senha != null && codificador.matches(senha, conta.senhaHash());
+    }
+
     // ---------- comandos ----------
 
     public synchronized Bootcamp criarBootcamp(String nome, String descricao, LocalDate dataInicial,
@@ -105,8 +118,17 @@ public class Escola {
         return conteudo;
     }
 
-    public synchronized Dev criarDev(String nome) {
+    /** Cadastra o dev e a conta de acesso dele; se algo for recusado, nada é criado. */
+    public synchronized Dev criarDev(String nome, String email, String senha) {
+        validarCredenciais(email, senha);
         Dev dev = criarDevEm(nome);
+        try {
+            criarConta(email, senha, Papel.ALUNO, dev.getId(), dev.getNome());
+        } catch (RuntimeException e) {
+            devs.remove(dev.getId());
+            proximoDev--;
+            throw e;
+        }
         persistir();
         return dev;
     }
@@ -165,6 +187,29 @@ public class Escola {
         return bootcamp;
     }
 
+    Conta criarConta(String email, String senha, Papel papel, String devId, String nome) {
+        validarCredenciais(email, senha);
+        if (contas.containsKey(chave(email))) {
+            throw new EstadoInvalidoException("Já existe uma conta com o e-mail " + email.trim() + ".");
+        }
+        Conta conta = new Conta(chave(email), codificador.encode(senha), papel, devId, nome);
+        contas.put(conta.email(), conta);
+        return conta;
+    }
+
+    private static String chave(String email) {
+        return email == null ? "" : email.trim().toLowerCase();
+    }
+
+    private static void validarCredenciais(String email, String senha) {
+        if (!chave(email).matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
+            throw new RegraVioladaException("Informe um e-mail válido.");
+        }
+        if (senha == null || senha.length() < 8 || senha.length() > 72) {
+            throw new RegraVioladaException("A senha precisa ter de 8 a 72 caracteres.");
+        }
+    }
+
     Dev criarDevEm(String nome) {
         String limpo = nome == null ? "" : nome.trim();
         if (devs.values().stream().anyMatch(d -> d.getNome().equalsIgnoreCase(limpo))) {
@@ -219,6 +264,7 @@ public class Escola {
     private void limpar() {
         bootcamps.clear();
         devs.clear();
+        contas.clear();
         proximoBootcamp = 1;
         proximoConteudo = 1;
         proximoDev = 1;
@@ -247,7 +293,9 @@ public class Escola {
                             .map(e -> new Estado.ConclusaoSalva(e.getKey().getId(), e.getValue())).toList())).toList();
             salvosDevs.add(new Estado.DevSalvo(d.getId(), d.getNome(), matriculas));
         }
-        return new Estado(proximoBootcamp, proximoConteudo, proximoDev, salvosBootcamps, salvosDevs);
+        List<Estado.ContaSalva> salvasContas = contas.values().stream()
+                .map(c -> new Estado.ContaSalva(c.email(), c.senhaHash(), c.papel(), c.devId(), c.nome())).toList();
+        return new Estado(proximoBootcamp, proximoConteudo, proximoDev, salvosBootcamps, salvosDevs, salvasContas);
     }
 
     private void restaurar(Estado estado) {
@@ -275,6 +323,11 @@ public class Escola {
                 for (Estado.ConclusaoSalva conclusao : m.conclusoes()) {
                     dev.matriculaEm(m.bootcampId()).orElseThrow().concluirProximo(conclusao.em());
                 }
+            }
+        }
+        if (estado.contas() != null) {
+            for (Estado.ContaSalva c : estado.contas()) {
+                contas.put(c.email(), new Conta(c.email(), c.senhaHash(), c.papel(), c.devId(), c.nome()));
             }
         }
     }

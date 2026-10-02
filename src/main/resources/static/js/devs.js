@@ -12,6 +12,12 @@ export function listaDeDevs(ctx, selecionadoId) {
       d.certificados ? h('span', { class: 'mini ouro', title: d.certificados + ' certificado(s)' }, icone('trofeu', 14), d.certificados) : null)));
 
   const dev = devs.find((d) => d.id === selecionadoId);
+  if (!ctx.coordenador) {
+    return h('section', {},
+      h('div', { class: 'cabecalho' }, h('div', {}, h('h1', {}, 'Minha jornada'),
+        h('p', { class: 'sub' }, 'Seu progresso, seu XP e o próximo passo de cada bootcamp.'))),
+      dev ? painelDoDev(ctx, dev) : h('p', { class: 'vazio' }, 'Não encontrei a sua jornada.'));
+  }
   return h('section', {},
     h('div', { class: 'cabecalho' },
       h('div', {}, h('h1', {}, 'Devs'), h('p', { class: 'sub' }, 'Escolha alguém para acompanhar a jornada, concluir conteúdos e acumular XP.')),
@@ -31,7 +37,7 @@ function painelDoDev(ctx, d) {
   const livres = ctx.dados.bootcamps.filter((b) => !matriculados.has(b.id) && b.situacao !== 'ENCERRADO' && b.conteudos.length);
 
   return h('div', { class: 'painel-dev' },
-    h('a', { class: 'voltar so-celular', href: '#/devs' }, icone('voltar', 16), 'Todos os devs'),
+    ctx.coordenador ? h('a', { class: 'voltar so-celular', href: '#/devs' }, icone('voltar', 16), 'Todos os devs') : null,
     h('div', { class: 'cartao dev-topo' },
       h('span', { class: 'avatar grande' }, iniciais(d.nome)),
       h('div', { class: 'dev-info' },
@@ -108,16 +114,18 @@ function painelNovaMatricula(ctx, d, livres) {
 
 function janelaNovoDev(ctx) {
   const nome = h('input', { type: 'text', maxlength: 50, required: true, placeholder: 'Nome e sobrenome' });
+  const email = h('input', { type: 'email', maxlength: 120, required: true, placeholder: 'aluno@exemplo.com', autocomplete: 'off' });
+  const senha = h('input', { type: 'text', minlength: 8, maxlength: 72, required: true, autocomplete: 'off', placeholder: 'Mínimo de 8 caracteres' });
   const formulario = h('form', { class: 'formulario', onsubmit: async (e) => {
     e.preventDefault();
     try {
-      const novo = await post('/api/devs', { nome: nome.value });
+      const novo = await post('/api/devs', { nome: nome.value, email: email.value, senha: senha.value });
       fecharJanela();
       aviso('Dev cadastrado.');
       await ctx.recarregar();
       location.hash = '#/devs/' + novo.id;
     } catch (err) { aviso(err.message, 'erro'); }
-  } }, campo('Nome', nome), h('div', { class: 'acoes' },
+  } }, campo('Nome', nome), campo('E-mail de acesso', email), campo('Senha inicial', senha, 'Combine com o aluno; ele entra com esse e-mail e essa senha.'), h('div', { class: 'acoes' },
     h('button', { class: 'botao', type: 'button', onclick: fecharJanela }, 'Cancelar'),
     h('button', { class: 'botao primario', type: 'submit' }, 'Cadastrar')));
   abrirJanela('Novo dev', formulario);
@@ -138,6 +146,6 @@ export function janelaCertificado(c) {
       h('p', { class: 'certificado-texto' }, 'somando ' + numero(c.xp) + ' XP, em ' + dataLonga(c.emitidoEm) + '.'),
       h('p', { class: 'certificado-codigo' }, 'Código ', h('code', {}, c.codigo))));
   abrirJanela('Certificado', [folha, h('div', { class: 'acoes' },
-    h('p', { class: 'mudo' }, 'Qualquer pessoa confere o código na aba Ranking.'),
+    h('p', { class: 'mudo' }, 'Qualquer pessoa confere o código na tela de entrada da Jornada.'),
     h('button', { class: 'botao primario', type: 'button', onclick: () => window.print() }, icone('imprimir'), 'Imprimir'))], { larga: true });
 }

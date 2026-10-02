@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ import dev.barboza.jornada.dominio.Desafio;
 import dev.barboza.jornada.dominio.Mentoria;
 import dev.barboza.jornada.dominio.NaoEncontradoException;
 import dev.barboza.jornada.dominio.TipoConteudo;
+import dev.barboza.jornada.seguranca.UsuarioLogado;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -78,28 +80,33 @@ public class EscolaController {
     // ---------- devs ----------
 
     @GetMapping("/devs")
-    @Operation(summary = "Lista os devs")
-    public List<DevDto> devs() {
-        return escola.devs().stream().map(d -> DevDto.de(d, escola.hoje())).toList();
+    @Operation(summary = "Lista os devs", description = "O coordenador vê todos; o aluno vê só a si mesmo.")
+    public List<DevDto> devs(@AuthenticationPrincipal UsuarioLogado usuario) {
+        return escola.devs().stream()
+                .filter(d -> usuario.coordenador() || d.getId().equals(usuario.devId()))
+                .map(d -> DevDto.de(d, escola.hoje())).toList();
     }
 
     @GetMapping("/devs/{id}")
     @Operation(summary = "Mostra um dev com as suas matrículas e trilhas")
-    public DevDto dev(@PathVariable String id) {
+    public DevDto dev(@PathVariable String id, @AuthenticationPrincipal UsuarioLogado usuario) {
+        usuario.exigirProprio(id);
         return DevDto.de(escola.dev(id), escola.hoje());
     }
 
     @PostMapping("/devs")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Cadastra um dev")
+    @Operation(summary = "Cadastra um dev e a conta de acesso dele", description = "Só o coordenador.")
     public DevDto criarDev(@Valid @RequestBody NovoDev pedido) {
-        return DevDto.de(escola.criarDev(pedido.nome()), escola.hoje());
+        return DevDto.de(escola.criarDev(pedido.nome(), pedido.email(), pedido.senha()), escola.hoje());
     }
 
     @PostMapping("/devs/{id}/matriculas")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Matricula o dev em um bootcamp")
-    public DevDto matricular(@PathVariable String id, @Valid @RequestBody NovaMatricula pedido) {
+    public DevDto matricular(@PathVariable String id, @Valid @RequestBody NovaMatricula pedido,
+                             @AuthenticationPrincipal UsuarioLogado usuario) {
+        usuario.exigirProprio(id);
         escola.matricular(id, pedido.bootcampId());
         return DevDto.de(escola.dev(id), escola.hoje());
     }
@@ -107,7 +114,9 @@ public class EscolaController {
     @PostMapping("/devs/{id}/matriculas/{bootcampId}/progresso")
     @Operation(summary = "Conclui o próximo conteúdo da trilha e soma o XP",
             description = "Recusa se a mentoria ainda não aconteceu, se o bootcamp não começou ou já terminou.")
-    public ProgressoDto progredir(@PathVariable String id, @PathVariable String bootcampId) {
+    public ProgressoDto progredir(@PathVariable String id, @PathVariable String bootcampId,
+                                  @AuthenticationPrincipal UsuarioLogado usuario) {
+        usuario.exigirProprio(id);
         var conclusao = escola.progredir(id, bootcampId);
         return new ProgressoDto(ConteudoDto.de(conclusao.conteudo()), conclusao.conteudo().calcularXp(),
                 conclusao.certificado().isPresent(), DevDto.de(escola.dev(id), escola.hoje()));

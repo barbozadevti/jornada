@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -21,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -41,20 +43,27 @@ class ApiTest {
     @Autowired
     MockMvc mvc;
 
+    MockHttpSession coord;
+
     @BeforeEach
     void dadosDeExemplo() throws Exception {
-        mvc.perform(post("/api/demo/reiniciar")).andExpect(status().isNoContent());
+        coord = Sessoes.entrar(mvc, "coordenador@jornada.dev");
+        mvc.perform(post("/api/demo/reiniciar").session(coord).with(csrf())).andExpect(status().isNoContent());
+    }
+
+    private ResultActions pegar(MockHttpSession sessao, String rota) throws Exception {
+        return mvc.perform(get(rota).session(sessao));
     }
 
     private ResultActions postar(String rota, String json) throws Exception {
-        return mvc.perform(post(rota).contentType(MediaType.APPLICATION_JSON).content(json));
+        return mvc.perform(post(rota).session(coord).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(json));
     }
 
     // ---------- leitura ----------
 
     @Test
     void listaOsBootcampsComSituacaoVagasEXp() throws Exception {
-        mvc.perform(get("/api/bootcamps")).andExpect(status().isOk())
+        pegar(coord, "/api/bootcamps").andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].nome", is("Java Developer")))
                 .andExpect(jsonPath("$[0].situacao", is("EM_ANDAMENTO")))
@@ -68,7 +77,7 @@ class ApiTest {
 
     @Test
     void mostraATrilhaComOXpDeCadaTipoExplicado() throws Exception {
-        mvc.perform(get("/api/bootcamps/b1")).andExpect(status().isOk())
+        pegar(coord, "/api/bootcamps/b1").andExpect(status().isOk())
                 .andExpect(jsonPath("$.conteudos", hasSize(7)))
                 .andExpect(jsonPath("$.conteudos[0].tipo", is("CURSO")))
                 .andExpect(jsonPath("$.conteudos[0].xp", is(80)))
@@ -81,7 +90,7 @@ class ApiTest {
 
     @Test
     void mostraOProgressoDeUmDev() throws Exception {
-        mvc.perform(get("/api/devs/d1")).andExpect(status().isOk())
+        pegar(coord, "/api/devs/d1").andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome", is("Camila Souza")))
                 .andExpect(jsonPath("$.xp", is(365)))
                 .andExpect(jsonPath("$.nivel.nome", is("Júnior")))
@@ -101,7 +110,7 @@ class ApiTest {
 
     @Test
     void rankingOrdenaPorXp() throws Exception {
-        mvc.perform(get("/api/ranking")).andExpect(status().isOk())
+        pegar(coord, "/api/ranking").andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].posicao", is(1)))
                 .andExpect(jsonPath("$[0].nome", is("Camila Souza")))
                 .andExpect(jsonPath("$[0].xp", is(365)))
@@ -111,7 +120,7 @@ class ApiTest {
 
     @Test
     void regrasDeXpDosTresTipos() throws Exception {
-        mvc.perform(get("/api/regras-xp")).andExpect(status().isOk())
+        pegar(coord, "/api/regras-xp").andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].exemplo", is("10 XP × 8 h = 80 XP")))
                 .andExpect(jsonPath("$[1].exemplo", is("10 XP + 20 XP de mentoria = 30 XP")))
@@ -133,7 +142,7 @@ class ApiTest {
                 {"tipo":"MENTORIA","titulo":"Revisão","data":"2026-10-02"}""")
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.xp", is(30)));
         postar("/api/devs", """
-                {"nome":"Nina Reis"}""").andExpect(status().isCreated()).andExpect(jsonPath("$.id", is("d5")));
+                {"nome":"Nina Reis","email":"nina@teste.dev","senha":"senha-forte-1"}""").andExpect(status().isCreated()).andExpect(jsonPath("$.id", is("d5")));
         postar("/api/devs/d5/matriculas", """
                 {"bootcampId":"b4"}""").andExpect(status().isCreated())
                 .andExpect(jsonPath("$.matriculas[0].total", is(2)));
@@ -147,10 +156,10 @@ class ApiTest {
                 .andExpect(jsonPath("$.dev.xp", is(70)))
                 .andExpect(jsonPath("$.dev.matriculas[0].certificado.codigo", is("JRN-D5-B4")));
 
-        mvc.perform(get("/api/certificados/JRN-D5-B4")).andExpect(status().isOk())
+        pegar(coord, "/api/certificados/JRN-D5-B4").andExpect(status().isOk())
                 .andExpect(jsonPath("$.dev", is("Nina Reis")))
                 .andExpect(jsonPath("$.bootcamp", is("Testes automatizados")));
-        mvc.perform(get("/api/certificados/JRN-D1-B3")).andExpect(status().isOk());
+        pegar(coord, "/api/certificados/JRN-D1-B3").andExpect(status().isOk());
     }
 
     @Test
@@ -159,7 +168,7 @@ class ApiTest {
         postar("/api/devs/d1/matriculas/b1/progresso", "{}").andExpect(status().isOk());
         postar("/api/devs/d1/matriculas/b1/progresso", "{}").andExpect(status().isConflict())
                 .andExpect(jsonPath("$.detail", is("A mentoria só acontece em 14/10/2026.")));
-        mvc.perform(get("/api/devs/d1")).andExpect(jsonPath("$.matriculas[1].podeProgredir", is(false)))
+        pegar(coord, "/api/devs/d1").andExpect(jsonPath("$.matriculas[1].podeProgredir", is(false)))
                 .andExpect(jsonPath("$.matriculas[1].impedimento", is("A mentoria só acontece em 14/10/2026.")));
     }
 
@@ -167,11 +176,11 @@ class ApiTest {
 
     @Test
     void naoEncontradoDa404() throws Exception {
-        mvc.perform(get("/api/bootcamps/b99")).andExpect(status().isNotFound())
+        pegar(coord, "/api/bootcamps/b99").andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail", is("Bootcamp não encontrado: b99")));
-        mvc.perform(get("/api/devs/d99")).andExpect(status().isNotFound());
-        mvc.perform(get("/api/certificados/XYZ")).andExpect(status().isNotFound());
+        pegar(coord, "/api/devs/d99").andExpect(status().isNotFound());
+        pegar(coord, "/api/certificados/XYZ").andExpect(status().isNotFound());
     }
 
     @Test
@@ -194,7 +203,7 @@ class ApiTest {
         postar("/api/bootcamps/b1/conteudos", """
                 {"tipo":"CURSO","titulo":"Tarde demais","cargaHoraria":2}""").andExpect(status().isConflict());
         postar("/api/devs", """
-                {"nome":"camila souza"}""").andExpect(status().isConflict());
+                {"nome":"camila souza","email":"outra@teste.dev","senha":"senha-forte-1"}""").andExpect(status().isConflict());
         postar("/api/devs/d4/matriculas/b1/progresso", "{}").andExpect(status().isConflict());
     }
 
@@ -210,7 +219,7 @@ class ApiTest {
 
     @Test
     void servePaginaInicialComCabecalhosDeSeguranca() throws Exception {
-        mvc.perform(get("/index.html")).andExpect(status().isOk())
+        pegar(coord, "/index.html").andExpect(status().isOk())
                 .andExpect(content().string(containsString("<title>Jornada</title>")))
                 .andExpect(header().string("Content-Security-Policy", startsWith("default-src 'self'")))
                 .andExpect(header().string("X-Content-Type-Options", "nosniff"));
@@ -218,15 +227,15 @@ class ApiTest {
 
     @Test
     void healthResponde() throws Exception {
-        mvc.perform(get("/health")).andExpect(status().isOk()).andExpect(jsonPath("$.status", is("UP")));
+        pegar(coord, "/health").andExpect(status().isOk()).andExpect(jsonPath("$.status", is("UP")));
     }
 
     @Test
     void naoHaNadaInlineNoHtml() throws Exception {
-        String html = mvc.perform(get("/index.html")).andReturn().getResponse().getContentAsString();
+        String html = pegar(coord, "/index.html").andReturn().getResponse().getContentAsString();
         org.assertj.core.api.Assertions.assertThat(html).doesNotContain("onclick=").doesNotContain("style=\"");
-        mvc.perform(get("/api/devs/d4")).andExpect(jsonPath("$.matriculas", hasSize(0)))
+        pegar(coord, "/api/devs/d4").andExpect(jsonPath("$.matriculas", hasSize(0)))
                 .andExpect(jsonPath("$.nivel.nome", is("Iniciante")));
-        mvc.perform(get("/api/devs/d4")).andExpect(jsonPath("$.nivel.proximoXp", is(150)));
+        pegar(coord, "/api/devs/d4").andExpect(jsonPath("$.nivel.proximoXp", is(150)));
     }
 }

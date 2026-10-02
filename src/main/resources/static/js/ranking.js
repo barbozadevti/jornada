@@ -2,6 +2,9 @@ import { get } from './api.js';
 import { h, icone, iniciais, numero, dataLonga } from './ui.js';
 import { janelaCertificado } from './devs.js';
 
+/** O aluno só abre a própria página; os outros aparecem no ranking, mas sem link. */
+const pode = (ctx, d) => ctx.coordenador || d.id === ctx.usuario.devId;
+
 export function telaDeRanking(ctx) {
   const { ranking } = ctx.dados;
   const podio = ranking.slice(0, 3);
@@ -27,7 +30,7 @@ export function telaDeRanking(ctx) {
   return h('section', {},
     h('div', { class: 'cabecalho' }, h('div', {}, h('h1', {}, 'Ranking'), h('p', { class: 'sub' }, 'Quem mais acumulou XP concluindo conteúdos. O desempate é por ordem alfabética.'))),
     ranking.length ? h('div', { class: 'podio' }, ordem.map((d) =>
-      h('a', { class: 'podio-lugar lugar-' + d.posicao, href: '#/devs/' + d.id },
+      h(pode(ctx, d) ? 'a' : 'div', { class: 'podio-lugar lugar-' + d.posicao, href: pode(ctx, d) ? '#/devs/' + d.id : null },
         h('span', { class: 'avatar grande' }, iniciais(d.nome)),
         h('strong', {}, d.nome),
         h('span', { class: 'mudo' }, d.nivel),
@@ -38,7 +41,7 @@ export function telaDeRanking(ctx) {
         h('thead', {}, h('tr', {}, h('th', {}, '#'), h('th', {}, 'Dev'), h('th', {}, 'Nível'), h('th', { class: 'num' }, 'Certificados'), h('th', { class: 'num' }, 'XP'))),
         h('tbody', {}, ranking.map((d) => h('tr', {},
           h('td', {}, d.posicao),
-          h('td', {}, h('a', { href: '#/devs/' + d.id }, d.nome)),
+          h('td', {}, pode(ctx, d) ? h('a', { href: '#/devs/' + d.id }, d.nome) : d.nome, d.id === ctx.usuario.devId ? h('span', { class: 'chip ouro' }, 'você') : null),
           h('td', {}, d.nivel),
           h('td', { class: 'num' }, d.certificados || '—'),
           h('td', { class: 'num' }, h('strong', {}, numero(d.xp)))))))),
